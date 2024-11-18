@@ -8,6 +8,8 @@ import 'package:metaballs/native_metaballs_renderer.dart'
     if (dart.library.html) 'package:metaballs/web_metaballs_renderer.dart';
 import 'package:metaballs/types.dart';
 
+const MAX_METABALLS = 27;
+
 abstract class MetaballsEffect {
   MetaballsEffect();
 
@@ -339,7 +341,7 @@ class Metaballs extends StatefulWidget {
     this.glowRadius = 0.7,
     this.glowIntensity = 0.6,
     this.bounceStiffness = 3,
-    this.metaballs = 40,
+    this.metaballs = 18,
     this.child,
     this.effect,
   })  : assert(speedMultiplier >= 0),
@@ -348,7 +350,7 @@ class Metaballs extends StatefulWidget {
         assert(minBallRadius >= 0),
         assert(glowRadius >= 0 && glowRadius <= 1),
         assert(glowIntensity >= 0 && glowIntensity <= 1),
-        assert(metaballs > 0 && metaballs <= 128),
+        assert(metaballs > 0 && metaballs <= MAX_METABALLS),
         super(key: key);
 
   @override
@@ -488,13 +490,21 @@ class _MetaBallsState extends State<Metaballs> with TickerProviderStateMixin {
                   follower.radius = r;
                 }
 
+                if (computedMetaballs.length >= MAX_METABALLS) {
+                  break;
+                }
+
                 computedMetaballs
-                    .add(MetaBallComputedState(x: follower.position.dx, y: follower.position.dy, r: follower.radius));
+                  .add(MetaBallComputedState(x: follower.position.dx, y: follower.position.dy, r: follower.radius)); 
               }
             }
 
             for (final pointer in _pointers.values) {
               pointer.delta = const Offset(0, 0);
+            }
+
+            if (computedMetaballs.length > MAX_METABALLS) {
+              computedMetaballs.removeRange(MAX_METABALLS, computedMetaballs.length);
             }
 
             return MetaballsRenderer(
